@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Calculadora de Notas</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5f9;
+            color: #222;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #1182b7;
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #d1f0ff;
+        }
+
+        .contenedor {
+            width: 90%;
+            max-width: 900px;
+            margin: 30px auto;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .fila {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 15px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1182b7;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-agregar {
+            background: #1182b7;
+            color: white;
+            margin-top: 5px;
+        }
+
+        .btn-agregar:hover {
+            background: #0d6b96;
+        }
+
+        .btn-calcular {
+            background: #198754;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-calcular:hover {
+            background: #146c43;
+        }
+
+        .btn-eliminar {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-eliminar:hover {
+            background: #b02a37;
+        }
+
+        .info {
+            background: #e8f4fb;
+            border-left: 5px solid #1182b7;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .resultado {
+            display: none;
+            text-align: center;
+            padding: 25px;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+
+        .resultado h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .nota-final {
+            font-size: 55px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .mensaje {
+            font-size: 19px;
+            margin-top: 10px;
+        }
+
+        .barra-contenedor {
+            width: 100%;
+            height: 25px;
+            background: #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .barra {
+            height: 100%;
+            width: 0%;
+            background: #198754;
+            transition: width 0.5s;
+        }
+
+        .peso-total {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 650px) {
+            .fila {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-eliminar {
+                width: 100%;
+            }
+
+            header h1 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>📚 Calculadora de Notas</h1>
+    <p>Calcula tu nota final de manera rápida y sencilla</p>
+</header>
+
+<main class="contenedor">
+
+    <section class="tarjeta">
+
+        <h2>📝 Ingresa tus notas</h2>
+
+        <div class="info">
+            <strong>Instrucciones:</strong>
+            Ingresa cada nota de 0 a 100 y su porcentaje.
+            Los porcentajes deben sumar exactamente 100%.
+        </div>
+
+        <div id="listaNotas">
+
+            <div class="fila">
+
+                <div class="campo">
+                    <label>Nota (0 - 100)</label>
+                    <input
+                        type="number"
+                        class="nota"
+                        min="0"
+                        max="100"
+                        step="1"
+                        placeholder="Ej: 85"
+                    >
+                </div>
+
+                <div class="campo">
+                    <label>Porcentaje (%)</label>
+                    <input
+                        type="number"
+                        class="peso"
+                        min="0"
+                        max="100"
+                        step="1"
+                        placeholder="Ej: 30"
+                    >
+                </div>
+
+                <button
+                    class="btn-eliminar"
+                    onclick="eliminarFila(this)"
+                >
+                    🗑️
+                </button>
+
+            </div>
+
+        </div>
+
+        <button class="btn-agregar" onclick="agregarNota()">
+            ➕ Agregar nota
+        </button>
+
+        <p class="peso-total">
+            Porcentaje total:
+            <span id="pesoTotal">0</span>%
+        </p>
+
+        <p id="error" class="error"></p>
+
+        <button class="btn-calcular" onclick="calcularNota()">
+            🧮 Calcular nota final
+        </button>
+
+    </section>
+
+
+    <section id="resultado" class="tarjeta resultado">
+
+        <h3>🎯 Tu nota final es:</h3>
+
+        <div id="notaFinal" class="nota-final">
+            0
+        </div>
+
+        <div class="barra-contenedor">
+            <div id="progreso" class="barra"></div>
+        </div>
+
+        <p id="mensaje" class="mensaje"></p>
+
+    </section>
+
+</main>
+
+
+<script>
+
+function agregarNota() {
+
+    const lista = document.getElementById("listaNotas");
+
+    const fila = document.createElement("div");
+
+    fila.className = "fila";
+
+    fila.innerHTML = `
+        <div class="campo">
+            <label>Nota (0 - 100)</label>
+            <input
+                type="number"
+                class="nota"
+                min="0"
+                max="100"
+                step="1"
+                placeholder="Ej: 85"
+            >
+        </div>
+
+        <div class="campo">
+            <label>Porcentaje (%)</label>
+            <input
+                type="number"
+                class="peso"
+                min="0"
+                max="100"
+                step="1"
+                placeholder="Ej: 30"
+            >
+        </div>
+
+        <button
+            class="btn-eliminar"
+            onclick="eliminarFila(this)"
+        >
+            🗑️
+        </button>
+    `;
+
+    lista.appendChild(fila);
+
+    actualizarPeso();
+}
+
+
+function eliminarFila(boton) {
+
+    const filas = document.querySelectorAll(".fila");
+
+    if (filas.length === 1) {
+        alert("Debes tener al menos una nota.");
+        return;
+    }
+
+    boton.parentElement.remove();
+
+    actualizarPeso();
+}
+
+
+function actualizarPeso() {
+
+    const pesos = document.querySelectorAll(".peso");
+
+    let total = 0;
+
+    pesos.forEach(function(peso) {
+
+        const valor = parseFloat(peso.value);
+
+        if (!isNaN(valor)) {
+            total += valor;
+        }
+
+    });
+
+    document.getElementById("pesoTotal").textContent =
+        total.toFixed(0);
+}
+
+
+function calcularNota() {
+
+    const filas = document.querySelectorAll(".fila");
+
+    let sumaNotas = 0;
+    let sumaPesos = 0;
+
+    const error = document.getElementById("error");
+
+    error.textContent = "";
+
+    for (let i = 0; i < filas.length; i++) {
+
+        const notaInput =
+            filas[i].querySelector(".nota");
+
+        const pesoInput =
+            filas[i].querySelector(".peso");
+
+        const nota =
+            parseFloat(notaInput.value);
+
+        const peso =
+            parseFloat(pesoInput.value);
+
+        if (isNaN(nota) || isNaN(peso)) {
+
+            error.textContent =
+                "⚠️ Completa todas las notas y porcentajes.";
+
+            return;
+        }
+
+        if (nota < 0 || nota > 100) {
+
+            error.textContent =
+                "⚠️ Las notas deben estar entre 0 y 100.";
+
+            return;
+        }
+
+        if (peso < 0 || peso > 100) {
+
+            error.textContent =
+                "⚠️ Los porcentajes deben estar entre 0 y 100.";
+
+            return;
+        }
+
+        sumaNotas += nota * (peso / 100);
+
+        sumaPesos += peso;
+    }
+
+
+    if (Math.abs(sumaPesos - 100) > 0.001) {
+
+        error.textContent =
+            "⚠️ Los porcentajes deben sumar exactamente 100%. Actualmente suman "
+            + sumaPesos.toFixed(0)
+            + "%.";
+
+        return;
+    }
+
+
+    const notaFinal =
+        sumaNotas.toFixed(2);
+
+    document.getElementById("resultado").style.display =
+        "block";
+
+    document.getElementById("notaFinal").textContent =
+        notaFinal;
+
+
+    document.getElementById("progreso").style.width =
+        sumaNotas + "%";
+
+
+    let mensaje = "";
+
+    if (sumaNotas >= 90) {
+
+        mensaje = "🔥 ¡Excelente trabajo!";
+
+    } else if (sumaNotas >= 80) {
+
+        mensaje = "👏 ¡Muy buen resultado!";
+
+    } else if (sumaNotas >= 60) {
+
+        mensaje = "✅ ¡Vas bien!";
+
+    } else if (sumaNotas >= 50) {
+
+        mensaje = "📖 Puedes mejorar.";
+
+    } else {
+
+        mensaje = "💪 Sigue estudiando.";
+
+    }
+
+
+    document.getElementById("mensaje").textContent =
+        mensaje;
+
+
+    document.getElementById("resultado").scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+
+document.addEventListener("input", function(evento) {
+
+    if (evento.target.classList.contains("peso")) {
+        actualizarPeso();
+    }
+
+});
+
+</script>
+
+</body>
+</html>
